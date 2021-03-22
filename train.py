@@ -91,6 +91,8 @@ if __name__ == "__main__":  # noqa: C901
     parser.add_argument("-uuid", "--uuid", action="store_true", default=False, help="Ensure that the run has a unique ID")
     args = parser.parse_args()
 
+
+
     # Going through custom gym packages to let them register in the global registory
     for env_module in args.gym_packages:
         importlib.import_module(env_module)
@@ -159,9 +161,10 @@ if __name__ == "__main__":  # noqa: C901
         vec_env_type=args.vec_env,
     )
 
+    
     # Prepare experiment and launch hyperparameter optimization if needed
     model = exp_manager.setup_experiment()
-
+    
     # Normal training
     if model is not None:
         exp_manager.learn(model)

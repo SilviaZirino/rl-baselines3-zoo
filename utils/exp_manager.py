@@ -20,10 +20,10 @@ from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback,
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
-from stable_baselines3.common.preprocessing import is_image_space, is_image_space_channels_first
+from stable_baselines3.common.preprocessing import is_image_space, is_image_space_channels_first #, is_image_space_dict, is_image_space_channels_first_dict
 from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike  # noqa: F401
 from stable_baselines3.common.utils import constant_fn
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv, VecFrameStack, VecNormalize, VecTransposeImage
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv, VecFrameStack, VecNormalize, VecTransposeImage #, VecTransposeImageDict
 from stable_baselines3.common.vec_env.obs_dict_wrapper import ObsDictWrapper
 
 # For custom activation fn
@@ -34,6 +34,11 @@ import utils.import_envs  # noqa: F401 pytype: disable=import-error
 from utils.callbacks import SaveVecNormalizeCallback, TrialEvalCallback
 from utils.hyperparams_opt import HYPERPARAMS_SAMPLER
 from utils.utils import ALGOS, get_callback_list, get_latest_run_id, get_wrapper_class, linear_schedule
+
+
+from gym import envs
+import dVRL_simulator
+
 
 
 class ExperimentManager(object):
@@ -136,6 +141,7 @@ class ExperimentManager(object):
         )
         self.params_path = f"{self.save_path}/{self.env_id}"
 
+
     def setup_experiment(self) -> Optional[BaseAlgorithm]:
         """
         Read hyperparameters, pre-process them (create schedules, wrappers, callbacks, action noise objects)
@@ -149,10 +155,12 @@ class ExperimentManager(object):
         self.create_log_folder()
         self.create_callbacks()
 
+
         # Create env to have access to action space for action noise
-        env = self.create_envs(self.n_envs, no_log=False)
+        env = self.create_envs(self.n_envs, no_log=False)        
 
         self._hyperparams = self._preprocess_action_noise(hyperparams, env)
+        
 
         if self.continue_training:
             model = self._load_pretrained_agent(self._hyperparams, env)
@@ -168,7 +176,7 @@ class ExperimentManager(object):
                 **self._hyperparams,
             )
 
-        self._save_config(saved_hyperparams)
+        self._save_config(saved_hyperparams) #prints log path
         return model
 
     def learn(self, model: BaseAlgorithm) -> None:
@@ -480,7 +488,7 @@ class ExperimentManager(object):
 
         monitor_kwargs = {}
         # Special case for GoalEnvs: log success rate too
-        if "Neck" in self.env_id or self.is_robotics_env(self.env_id) or "parking-v0" in self.env_id:
+        if "Neck" in self.env_id or self.is_robotics_env(self.env_id) or "parking-v0" in self.env_id or "CameraReach-v0" in self.env_id: #ADDED my env
             monitor_kwargs = dict(info_keywords=("is_success",))
 
         # On most env, SubprocVecEnv does not help and is quite memory hungry
@@ -508,18 +516,21 @@ class ExperimentManager(object):
             if self.verbose > 0:
                 print(f"Stacking {n_stack} frames")
 
+
+
         # Wrap if needed to re-order channels
         # (switch from channel last to channel first convention)
         if is_image_space(env.observation_space) and not is_image_space_channels_first(env.observation_space):
             if self.verbose > 0:
                 print("Wrapping into a VecTransposeImage")
-            env = VecTransposeImage(env)
+            env = VecTransposeImage(env)          
+      
 
         # check if wrapper for dict support is needed
-        if self.algo == "her":
+        if self.algo == "her":           
             if self.verbose > 0:
                 print("Wrapping into a ObsDictWrapper")
-            env = ObsDictWrapper(env)
+            env = ObsDictWrapper(env)            
 
         return env
 

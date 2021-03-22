@@ -383,3 +383,20 @@ CarRacing-v0:
   policy_kwargs: "dict(log_std_init=-2,
                        ortho_init=False,
                        )"
+
+
+CameraReach-v0: # my environment
+  env_wrapper: RGBobs.RGBobs
+  frame_stack: 4
+  policy: 'CnnPolicy'
+  n_envs: 4
+  n_steps: 512
+  batch_size: 64
+  n_epochs: 5
+  n_timesteps: !!float 3e6
+  learning_rate: !!float 0.5e-3
+  clip_range: 0.2
+  vf_coef: 0.5
+  ent_coef: 0.0
+
+

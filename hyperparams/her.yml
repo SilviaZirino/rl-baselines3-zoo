@@ -173,3 +173,6 @@ FetchReach-v1:
   learning_starts: 1000
   online_sampling: True
   normalize: True
+
+
+

@@ -13,3 +13,8 @@ rl-trained_agents/
 htmlcov/
 git_rewrite_commit_history.sh
 .vscode/
+new_logs/
+experiments/
+new_scripts/
+my_train.py
+GIFS/
